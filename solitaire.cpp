@@ -138,11 +138,11 @@ std::tuple<bool, vector<enum PINTYPE> > find_solution(vector<enum PINTYPE> &pos)
    while (!sol_path.empty() && !solution)
    {
       pos = sol_path.back();
+      sol_path.pop_back();
       solution = solution_p(pos, solution_pos);
       if (!solution)
       {
         vector< pair<int,int> > moves = get_moves(pos);
-        sol_path.pop_back();
         for (auto &move : moves)
         {
             sol_path.push_back(make_move(pos, move));
