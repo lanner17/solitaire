@@ -128,39 +128,55 @@ void print_pos(const vector<enum PINTYPE> &pos)
     }
 }
 
-vector< vector<enum PINTYPE> > sol_path;
+vector< position_t > sol_path;
 
-std::tuple<bool, vector<enum PINTYPE> > find_solution(vector<enum PINTYPE> &pos)
+std::tuple<bool, position_t > find_solution(position_t &spos)
 {
    bool solution = false;
-   sol_path.push_back(pos);
+   position_t tpos = position_t(spos);
+   sol_path.push_back(tpos);
 
    while (!sol_path.empty() && !solution)
    {
-      pos = sol_path.back();
+      spos = sol_path.back();
       sol_path.pop_back();
-      solution = solution_p(pos, solution_pos);
+      solution = solution_p(spos.pos, solution_pos);
       if (!solution)
       {
-        vector< pair<int,int> > moves = get_moves(pos);
+        vector< pair<int,int> > moves = get_moves(spos.pos);
         for (auto &move : moves)
         {
-            sol_path.push_back(make_move(pos, move));
+            position_t npos = position_t();
+            npos.pos = make_move(spos.pos, move);
+            copy(spos.moves.begin(), spos.moves.end(), back_inserter(npos.moves));
+            npos.moves.push_back(move);
+            sol_path.push_back(npos);
         }
+      }
+      else
+      {
+         cout << "Length = " << spos.moves.size() << endl;
       }
    }
 
-    return std::make_tuple(solution, pos);
+    return std::make_tuple(solution, spos);
 }
 
 int main()
 {
-   auto [found, sol] = find_solution(start_pos);
+   position_t start = position_t();
+   start.pos = start_pos;
+   auto [found, sol] = find_solution(start);
    if (found)
    {
       cout << "Found solution" << endl;
       cout << "Solution path length = " <<  sol_path.size() << endl;
-      print_pos(sol);
+      print_pos(sol.pos);
+      for (auto &move : sol.moves)
+      {
+         cout << "From " << move.first << " To " << move.second << endl;
+      }
+      
    }
    else
       cout << "There is no solution !" << endl;
