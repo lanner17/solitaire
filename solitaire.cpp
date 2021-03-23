@@ -130,34 +130,41 @@ void print_pos(const vector<enum PINTYPE> &pos)
 
 vector< vector<enum PINTYPE> > sol_path;
 
-void find_solution(vector<enum PINTYPE> &pos)
+void find_solution(const vector<enum PINTYPE> &pos)
 {
-   bool solution = false;
-   do 
-   {
-      vector< pair<int,int> > moves = get_moves(pos);
-      for (auto &move : moves)
-      {
-         sol_path.push_back(make_move(pos, move));
-      }
 
-      pos = sol_path.back();
-      sol_path.pop_back();
-      solution = solution_p(pos, solution_pos);
-   } while (!sol_path.empty() && !solution);
-
-   if (solution)
-   {
-      cout << "Found solution" << endl;
-      cout << "Solution path length = " <<  sol_path.size() << endl;
-      print_pos(pos);
-   }
-   else
-      cout << "There is no solution !" << endl;
+    if (solution_p(pos, solution_pos))
+    {
+        cout << "found solution" << endl;
+        cout << "Solution path length = " <<  sol_path.size() << endl;
+        print_pos(pos);
+    }
+    else
+    {
+        vector< pair<int,int> > moves = get_moves(pos);
+        for (auto &move : moves)
+        {
+            sol_path.push_back(make_move(pos, move));
+        }
+        
+        if (!sol_path.empty())
+        {
+            auto posi = sol_path.back();
+            sol_path.pop_back();
+            find_solution(posi);
+        }
+        else
+        {
+            cout << "There is no solution" << endl;
+        }
+    }
 }
 
 int main()
 {
-   find_solution(start_pos);
-   return 0;
+    vector< pair<int,int> > moves = get_moves(start_pos);
+    cout << "Size : " << moves.size() << endl;
+    
+    find_solution(start_pos);
+    return 0;
 }
