@@ -92,6 +92,7 @@ auto get_moves(const vector<enum PINTYPE> &pos)
             moves.push_back(std::make_pair(i, i+2));
         }
     }
+//cout << "moves B call " << &moves << endl;
     return moves;
 }
 
@@ -107,7 +108,8 @@ vector<enum PINTYPE> make_move(const vector<enum PINTYPE> &pos, pair<int,int> &m
     new_pos[move.first] = EMPTY;
     new_pos[move.second] = PIN;
     new_pos[(move.first + move.second)/2] = EMPTY;
-
+//cout << std::format("In make_move {}", &new_pos) << endl;
+//cout << "pos before call " <<   &new_pos << endl;
     return new_pos;
 }
 
@@ -137,17 +139,21 @@ std::tuple<bool, vector<enum PINTYPE> > find_solution(vector<enum PINTYPE> &pos)
 
    while (!sol_path.empty() && !solution)
    {
-      pos = sol_path.back();
+//cout << "pos B call " << &pos << endl;
+      pos = sol_path.back();  // move
+//cout << "pos A call " << &pos << endl;
       sol_path.pop_back();
       solution = solution_p(pos, solution_pos);
       if (!solution)
       {
-        vector< pair<int,int> > moves = get_moves(pos);
+        vector< pair<int,int> > moves = get_moves(pos); // move
+//cout << "moves A call " << &moves << endl;
         for (auto &move : moves)
         {
             sol_path.push_back(make_move(pos, move));
         }
       }
+break;
    }
 
     return std::make_tuple(solution, pos);
@@ -155,6 +161,11 @@ std::tuple<bool, vector<enum PINTYPE> > find_solution(vector<enum PINTYPE> &pos)
 
 int main()
 {
+   pair<int,int> move = std::make_pair(22,24);
+   auto npos = make_move(start_pos, move);
+//cout << "pos after call " << &npos << endl;
+   //return 0;
+
    auto [found, sol] = find_solution(start_pos);
    if (found)
    {
