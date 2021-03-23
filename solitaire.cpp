@@ -133,8 +133,7 @@ vector< position_t > sol_path;
 std::tuple<bool, position_t > find_solution(position_t &spos)
 {
    bool solution = false;
-   position_t tpos = position_t(spos);
-   sol_path.push_back(tpos);
+   sol_path.push_back(position_t(spos));
 
    while (!sol_path.empty() && !solution)
    {
@@ -172,6 +171,7 @@ int main()
       cout << "Found solution" << endl;
       cout << "Solution path length = " <<  sol_path.size() << endl;
       print_pos(sol.pos);
+      //Print solution path
       for (auto &move : sol.moves)
       {
          cout << "From " << move.first << " To " << move.second << endl;
