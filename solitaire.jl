@@ -1,4 +1,3 @@
-
 @enum PINS begin
    EMPTY
    PIN
@@ -15,149 +14,139 @@ start_pos = [
    INVALID,INVALID,PIN,PIN,  PIN,INVALID,INVALID,
 ]
 
-solution_pos = [
-   INVALID,INVALID,EMPTY,EMPTY,EMPTY,INVALID,INVALID,
-   INVALID,INVALID,EMPTY,EMPTY,EMPTY,INVALID,INVALID,
-   EMPTY,  EMPTY,  EMPTY,EMPTY,EMPTY,EMPTY,  EMPTY,
-   EMPTY,  EMPTY,  EMPTY,PIN,  EMPTY,EMPTY,  EMPTY,
-   EMPTY,  EMPTY,  EMPTY,EMPTY,EMPTY,EMPTY,  EMPTY,
-   INVALID,INVALID,EMPTY,EMPTY,EMPTY,INVALID,INVALID,
-   INVALID,INVALID,EMPTY,EMPTY,EMPTY,INVALID,INVALID,
-]
+# inversion of starting position
+solution_pos = map(x -> if x == PIN EMPTY elseif x == EMPTY PIN else INVALID end, start_pos)
 
-struct position_t
-   moves::Vector{Tuple{Int64,Int64}}
-   pos::Vector{PINS}
+mutable struct position_t
+    moves::Vector{Tuple{Int64,Int64}}
+    pos::Vector{PINS}
 end
 
-function valid_up(pos::Vector{PINS}, pin::Int64)
-   endv = pin - 14
-   midv = pin - 7
-   return  ((endv > 1) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY));
-end
-
-function valid_dn(pos::Vector{PINS}, pin::Int64)
-   endv = pin + 14;
-   midv = pin + 7;
-   return  ((endv < 50) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY));
-end
+//u d l r
 
 function valid_left(pos::Vector{PINS}, pin::Int64)
-   endv = pin - 2;
-   midv = pin - 1;
-   return  ((endv > 1) && ((pin/7) == (endv/7)) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY));
+    endv = pin - 2;
+    midv = pin - 1;
+    return  ((endv > 1) && (((pin - 1) ÷ 7) == ((endv - 1) ÷ 7)) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY))
 end
 
 function valid_right(pos::Vector{PINS}, pin::Int64)
-   endv = pin + 2;
-   midv = pin + 1;
-   return  ((endv < 47) && ((pin/7) == (endv/7)) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY));
+    endv = pin + 2;
+    midv = pin + 1;
+    return  ((endv < 50) && (((pin - 1) ÷ 7) == ((endv - 1) ÷ 7)) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY))
 end
 
+function valid_up(pos::Vector{PINS}, pin::Int64)
+    endv = pin - 14
+    midv = pin - 7
+    return  ((endv >= 1) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY))
+end
+
+function valid_dn(pos::Vector{PINS}, pin::Int64)
+    endv = pin + 14;
+    midv = pin + 7;
+    return  ((endv < 50) && (pos[pin] == PIN) && (pos[midv] == PIN) && (pos[endv] == EMPTY))
+end
+
+//fast d u l r
+//slow l r d u
 function get_moves(pos::Vector{PINS})
-   moves = []
+    moves = []
 
-   for i = 1:50
-      if valid_dn(pos, i)
-         push!(moves, (i, i+14))
+    for i = 1:49
+        if valid_dn(pos, i)
+            push!(moves, (i, i + 14))
+        end
+        if valid_up(pos, i)
+            push!(moves, (i, i - 14))
+        end
+        if valid_left(pos, i)
+            push!(moves, (i, i - 2))
+        end
+        if valid_right(pos, i)
+            push!(moves, (i, i + 2))
+        end
+    end
 
-      if valid_up(pos, i)
-          push!(moves, (i, i-14))
-      
-      if valid_left(pos, i)
-          push!(moves, (i, i-2))
-
-      if valid_right(pos, i)
-         push!(moves, (i, i+2))
-
-   end
-
-   return moves
+    return moves
 end
 
-bool solution_p(const vector<enum PINTYPE> &a, const vector<enum PINTYPE> &b)
-{
-   return (a == b);
-}
+function solution_p(a::Vector{PINS}, b::Vector{PINS})
+    return (a == b)
+end
 
-vector<enum PINTYPE> make_move(const vector<enum PINTYPE> &pos, pair<int,int> &move)
-{
-   vector<enum PINTYPE> new_pos(pos.begin(), pos.end());
+function make_move(pos::Vector{PINS}, move::Tuple{Int64,Int64})
+    new_pos = copy(pos)
 
-   new_pos[move.first] = EMPTY;
-   new_pos[move.second] = PIN;
-   new_pos[(move.first + move.second)/2] = EMPTY;
+    new_pos[move[1]] = EMPTY;
+    new_pos[move[2]] = PIN;
+    new_pos[(move[1] + move[2]) ÷ 2] = EMPTY;
 
-   return new_pos;
-}
+    return new_pos
+end
 
-void print_pos(const vector<enum PINTYPE> &pos)
-{
-    for ( int i=0 ; i < pos.size() ; i++ )
-    {
-      if (pos[i] == INVALID)
-         cout << " ";
-      else if (pos[i] == PIN)
-         cout << "X";
-      else if (pos[i] == EMPTY)
-        cout << "O";
+function print_pos(pos)
+    for i = 1:49
+        if pos[i] == INVALID
+            print(" ")
+        elseif pos[i] == PIN
+         print("X")
+      elseif pos[i] == EMPTY
+        print("O")
+        end   
+        if (i % 7) == 0
+            println("")
+        end
+    end    
+end
 
-   if (((i+1) % 7) == 0)
-        cout << endl;
-   }
-}
+function find_solution(spos)
+    solution = false
+    sol_path = []
+    push!(sol_path, spos)
 
-vector< position_t > sol_path;
+    while !isempty(sol_path) && !solution
+        spos = pop!(sol_path)
+        solution = solution_p(spos.pos, solution_pos)
+        if !solution
+            moves = get_moves(spos.pos)
+            for move in moves
+                npos = position_t([], [])
+                npos.pos = make_move(spos.pos, move)
+                npos.moves = copy(spos.moves)
+                push!(npos.moves, move)
+                push!(sol_path, npos)
+            end
+        else
+            println("Length = ", length(spos.moves))
+        end
+    end
 
-std::tuple<bool, position_t > find_solution(position_t &spos)
-{
-   bool solution = false;
-   sol_path.push_back(position_t(spos));
+    return (solution, spos)
+end
 
-   while (!sol_path.empty() && !solution)
-   {
-      spos = sol_path.back();
-      sol_path.pop_back();
-      solution = solution_p(spos.pos, solution_pos);
-      if (!solution)
-      {
-         vector< pair<int,int> > moves = get_moves(spos.pos);
-         for (auto &move : moves)
-         {
-            position_t npos = position_t();
-            npos.pos = make_move(spos.pos, move);
-            copy(spos.moves.begin(), spos.moves.end(), back_inserter(npos.moves));
-            npos.moves.push_back(move);
-            sol_path.push_back(npos);
-        }
-      }
-      else
-      {
-         cout << "Length = " << spos.moves.size() << endl;
-      }
-   }
+function main()
+    start = position_t([], start_pos)
+    found, sol = find_solution(start)
+    if found
+        println("Found solution")
+        print_pos(sol.pos)
+      # Print solution path
+        for move in sol.moves
+            println("From ", move[1], " To ", move[2])
+        end
+    else
+        println("There is no solution !")
+    end
+end
 
-    return std::make_tuple(solution, spos);
-}
+#get_moves(start_pos)
 
-int main()
-{
-   position_t start = position_t();
-   start.pos = start_pos;
-   auto [found, sol] = find_solution(start);
-   if (found)
-   {
-      cout << "Found solution" << endl;
-      print_pos(sol.pos);
-      //Print solution path
-      for (auto &move : sol.moves)
-      {
-         cout << "From " << move.first << " To " << move.second << endl;
-      }
-      
-   }
-   else
-      cout << "There is no solution !" << endl;
+#print_pos(make_move(start_pos, (11, 25)))
+#print_pos(make_move(start_pos, (23, 25)))
+#print_pos(make_move(start_pos, (27, 25)))
+#print_pos(make_move(start_pos, (39, 25)))
+#solution_p(start_pos, solution_pos)
+#solution_p(solution_pos, solution_pos)
 
-   return 0;
-}
+main()

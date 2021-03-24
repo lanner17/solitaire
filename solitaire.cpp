@@ -1,3 +1,6 @@
+// To build this file 
+// clang++ -std=c++17 solitaire.cpp -o solitaire
+
 #include <iostream>
 #include <vector>
 #include <utility>
@@ -69,6 +72,9 @@ bool valid_right(const vector<enum PINTYPE> &pos, int pin)
    return  ((end < 47) && ((pin/7) == (end/7)) && (pos[pin] == PIN) && (pos[mid] == PIN) && (pos[end] == EMPTY));
 }
 
+//fast d u l r
+//slow l r d u
+
 auto get_moves(const vector<enum PINTYPE> &pos)
 {
    vector< pair<int,int> > moves;
@@ -77,7 +83,7 @@ auto get_moves(const vector<enum PINTYPE> &pos)
    {
       if (valid_dn(pos, i))
       {
-                   moves.push_back(std::make_pair(i, i+14));
+         moves.push_back(std::make_pair(i, i+14));
       }
       if (valid_up(pos, i))
       {
